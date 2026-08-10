@@ -1,0 +1,17 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+
+# Build caches
+*.test
+*.out
+
+# Runtime artifacts
+*.sock
+/daemon.log
+
+# Editor
+.vscode/
+.idea/
+.DS_Store

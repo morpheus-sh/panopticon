@@ -1,0 +1,32 @@
+# Goreleaser configuration for panopticon.
+# Usage: goreleaser release --clean   (requires GH_TOKEN)
+version: 2
+
+builds:
+  - id: panopticon
+    main: ./cmd/panopticon
+    binary: panopticon
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: [binary]
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}-{{ .Version }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
