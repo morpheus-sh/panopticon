@@ -271,10 +271,21 @@ func dispatchPane(call rpcFn, sub string, args []string) (string, error) {
 		}
 		var out json.RawMessage
 		p := map[string]any{
-			"pane":  pos[0],
-			"lines": atoi(flagValue(args, "--lines"), 120),
+			"pane":   pos[0],
+			"lines":  atoi(flagValue(args, "--lines"), 120),
+			"source": flagValue(args, "--source", "-s"),
 		}
 		if err := call("pane.read", p, &out); err != nil {
+			return "", err
+		}
+		return string(out), nil
+	case "close":
+		pos := positionalArgs(args)
+		if len(pos) < 1 {
+			return "", errors.New("pane close requires a pane id")
+		}
+		var out json.RawMessage
+		if err := call("pane.close", map[string]any{"pane": pos[0]}, &out); err != nil {
 			return "", err
 		}
 		return string(out), nil
@@ -322,7 +333,7 @@ func dispatchAgent(call rpcFn, sub string, args []string) (string, error) {
 			}
 		case "read":
 			p["lines"] = atoi(flagValue(args, "--lines"), 120)
-			if err := call("agent.read", map[string]any{"name": name, "lines": atoi(flagValue(args, "--lines"), 120)}, &out); err != nil {
+			if err := call("agent.read", map[string]any{"name": name, "lines": atoi(flagValue(args, "--lines"), 120), "source": flagValue(args, "--source", "-s")}, &out); err != nil {
 				return "", err
 			}
 		case "wait":
@@ -348,10 +359,10 @@ func dispatchAgent(call rpcFn, sub string, args []string) (string, error) {
 		}
 		name := pos[0]
 		p := map[string]any{
-			"name":  name,
-			"kind":  flagValue(args, "--kind"),
-			"pane":  flagValue(args, "--pane"),
-			"args":  strings.Join(pos[1:], " "),
+			"name": name,
+			"kind": flagValue(args, "--kind"),
+			"pane": flagValue(args, "--pane"),
+			"args": strings.Join(pos[1:], " "),
 		}
 		var out json.RawMessage
 		if err := call("agent.start", p, &out); err != nil {

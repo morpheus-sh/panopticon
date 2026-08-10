@@ -168,14 +168,15 @@ func (s *Server) onAgentState(a *model.Agent, st model.AgentState) {
 	if !changed {
 		return
 	}
-	// Notifications only for interruptible states.
+	// Notifications only for interruptible states: blocked (needs input),
+	// stalled (hung progress), and done (background turn finished unseen).
 	switch st {
-	case model.StateBlocked, model.StateDone:
-		if st == model.StateBlocked {
-			s.notifier.Blocked(a)
-		} else {
-			s.notifier.Done(a)
-		}
+	case model.StateBlocked:
+		s.notifier.Blocked(a)
+	case model.StateStalled:
+		s.notifier.Stalled(a)
+	case model.StateDone:
+		s.notifier.Done(a)
 	}
 }
 
@@ -297,6 +298,8 @@ func (s *Server) dispatch(req api.Request) api.Response {
 		return s.PaneRead(req)
 	case "pane.wait-output":
 		return s.PaneWaitOutput(req)
+	case "pane.close":
+		return s.PaneClose(req)
 	case "agent.list":
 		return api.Success(s.AgentList())
 	case "agent.get":

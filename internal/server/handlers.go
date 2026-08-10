@@ -223,12 +223,14 @@ func (s *Server) PaneRead(req api.Request) api.Response {
 	if lines <= 0 {
 		lines = 120
 	}
-	snap, err := s.eng.ReadScrollback(p.TmuxPaneID, lines)
+	source := paramString(req, "source")
+	snap, err := s.eng.ReadSource(p.TmuxPaneID, source, lines)
 	if err != nil {
 		return api.Failure(req, 500, "engine: "+err.Error())
 	}
 	return api.Success(map[string]any{
 		"pane":      p.ID,
+		"source":    source,
 		"text":      snap,
 		"truncated": lines > 0 && len(snap) > lines*8, // coarse heuristic
 	})
@@ -258,6 +260,27 @@ func (s *Server) PaneWaitOutput(req api.Request) api.Response {
 		"match": match,
 		"text":  snap,
 	})
+}
+
+func (s *Server) PaneClose(req api.Request) api.Response {
+	target := paramString(req, "pane")
+	if target == "" {
+		return api.Failure(req, 400, "missing pane")
+	}
+	p := s.model.ResolvePane(target)
+	if p == nil {
+		return api.Failure(req, 404, "pane not found: "+target)
+	}
+	// Release any bound agent so its name/pointer do not leak.
+	if p.Agent != nil {
+		s.model.ReleaseAgentName(p.Agent.Name)
+	}
+	// Stop detection for this pane first.
+	s.releasePane(p.ID)
+	if err := s.eng.ClosePane(p.TmuxPaneID); err != nil {
+		return api.Failure(req, 500, "engine: "+err.Error())
+	}
+	return api.Success(map[string]string{"closed": p.ID})
 }
 
 // ---- agent handlers ----
@@ -423,7 +446,7 @@ func (s *Server) AgentPrompt(req api.Request) api.Response {
 		}
 	}
 
-	state, err := s.awaitState(a, []model.AgentState{model.StateIdle, model.StateDone, model.StateBlocked}, time.Duration(timeoutMS)*time.Millisecond)
+	state, err := s.awaitState(a, []model.AgentState{model.StateIdle, model.StateDone, model.StateBlocked, model.StateStalled}, time.Duration(timeoutMS)*time.Millisecond)
 	if err != nil {
 		return api.Failure(req, 408, "agent_prompt_stalled: "+err.Error())
 	}
@@ -532,6 +555,8 @@ func (s *Server) AgentWait(req api.Request) api.Response {
 	switch until {
 	case "blocked":
 		states = []model.AgentState{model.StateBlocked}
+	case "stalled":
+		states = []model.AgentState{model.StateStalled}
 	case "idle":
 		states = []model.AgentState{model.StateIdle, model.StateDone}
 	default:
@@ -569,13 +594,15 @@ func (s *Server) AgentRead(req api.Request) api.Response {
 	if lines <= 0 {
 		lines = 120
 	}
-	snap, err := s.eng.ReadScrollback(p.TmuxPaneID, lines)
+	source := paramString(req, "source")
+	snap, err := s.eng.ReadSource(p.TmuxPaneID, source, lines)
 	if err != nil {
 		return api.Failure(req, 500, "engine: "+err.Error())
 	}
 	return api.Success(map[string]any{
-		"agent": a.Name,
-		"text":  snap,
+		"agent":  a.Name,
+		"source": source,
+		"text":   snap,
 	})
 }
 

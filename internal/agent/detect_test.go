@@ -2,6 +2,7 @@ package agent_test
 
 import (
 	"testing"
+	"time"
 
 	"panopticon/internal/agent"
 	"panopticon/internal/model"
@@ -62,5 +63,43 @@ func TestDetectLifecycle(t *testing.T) {
 	// Approval prompt => blocked (takes precedence).
 	if got := clf.Feed(a, []byte("\n[blocked] Do you want to proceed? (y/n)")); got != model.StateBlocked {
 		t.Fatalf("blocked: got %s", got)
+	}
+}
+
+// TestDetectStall verifies that once a spinner-only agent has gone past the
+// stall threshold with no real progress, it is declared 'stalled' rather than
+// 'working', and that new meaningful text resumes it immediately.
+//
+// The stall threshold is a real-time budget, so this test sleeps across it.
+func TestDetectStall(t *testing.T) {
+	a := &model.Agent{Name: "x", Kind: model.KindGeneric}
+	clf := agent.NewClassifier(func(_ *model.Agent, st model.AgentState) {})
+
+	// Real work first -> working, and set lastMeaningful.
+	if got := clf.Feed(a, []byte("analyzing")); got != model.StateWorking {
+		t.Fatalf("working: got %s", got)
+	}
+
+	// Wait out the startup grace so our feeds actually classify.
+	time.Sleep(2 * time.Second)
+
+	// Spin (identical frames redrawn in place via \r) with plenty of wall-clock
+	// time beyond the stall threshold so a stall is observable.
+	deadline := time.Now().Add(10 * time.Second)
+	stalled := false
+	for time.Now().Before(deadline) {
+		if got := clf.Feed(a, []byte("\r⠋ Working...")); got == model.StateStalled {
+			stalled = true
+			break
+		}
+		time.Sleep(150 * time.Millisecond)
+	}
+	if !stalled {
+		t.Fatal("never observed stalled state for spinner-only agent")
+	}
+
+	// New meaningful text resumes working immediately.
+	if got := clf.Feed(a, []byte("patch applied")); got != model.StateWorking {
+		t.Fatalf("resume working, got %s", got)
 	}
 }

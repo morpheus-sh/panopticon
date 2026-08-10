@@ -41,16 +41,17 @@ Commands:
   panopticon pane list|current --workspace <ws>
   panopticon pane split --pane <id>|--current --direction right|down [--cwd D] [--no-focus]
   panopticon pane run <pane> "<cmd>"
-  panopticon pane read <pane> [--lines N]
+  panopticon pane read <pane> [--lines N] [--source visible|recent|detection|scrollback]
   panopticon pane wait-output <pane> --match <text> [--regex] [--timeout MS]
+  panopticon pane close <pane>
 
   panopticon agent list
   panopticon agent get <agent>
-  panopticon agent start <name> --kind claude|codex|opencode|pi --pane <id> [-- <args...>]
-  panopticon agent prompt <agent> "<prompt>" [--wait] [--timeout MS] [--until <state>]
-  panopticon agent wait <agent> [--until idle|done|blocked] [--timeout MS]
+  panopticon agent start <name> --kind claude|codex|opencode|pi|generic --pane <id> [-- <args...>]
+  panopticon agent prompt <agent> "<prompt>" [--wait] [--timeout MS]
+  panopticon agent wait <agent> [--until idle|done|blocked|stalled] [--timeout MS]
   panopticon agent send-keys <agent> esc|enter|ctrl+c|...
-  panopticon agent read <agent> [--lines N]
+  panopticon agent read <agent> [--lines N] [--source visible|recent|detection|scrollback]
 
 Environment:
   PANOPTICON_SOCKET  Unix socket path for the daemon (default /tmp/panopticon/panopticon.sock).

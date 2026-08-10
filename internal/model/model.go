@@ -64,6 +64,10 @@ const (
 	StateWorking AgentState = "working"
 	StateBlocked AgentState = "blocked"
 	StateDone    AgentState = "done"
+	// StateStalled is a working agent that has stopped making real progress
+	// (e.g. a spinner that spins with no token growth for a while). It is
+	// worth surfacing because it usually means a hung LLM/API call.
+	StateStalled AgentState = "stalled"
 	StateUnknown AgentState = "unknown"
 )
 

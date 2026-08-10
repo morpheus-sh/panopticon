@@ -3,6 +3,22 @@
 All notable changes to panopticon are documented here. This project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`stalled` lifecycle state**: a `working` agent whose only output is a
+  redrawn spinner (no real progress) for > 8s is surfaced as `stalled` and
+  notifies. Addressed the roadmap's "spinner-stall detection" item.
+- **Named read sources** for `pane read` / `agent read`:
+  `visible`, `recent`, `detection`, `scrollback` (roadmap: richer read sources).
+- **`pane close`** command (CLI + JSON-RPC), releasing any bound agent.
+
+### Changed
+- Carriage-return line overwrites are modeled in the classifier so spinner
+  frames do not accumulate as "new content" (enables accurate stall detection).
+- README rewritten to be engine/user-generic with a full command reference.
+
+
 ## [0.1.0] — first release
 
 Initial production release of the agent-aware tmux multiplexer with a

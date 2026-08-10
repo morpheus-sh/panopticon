@@ -84,6 +84,13 @@ OUT="$("$BIN" pane wait-output "$NP" --match "SIMPLETOKEN yes" --timeout 8000)"
 echo "$OUT" | python3 -c 'import sys,json;assert json.load(sys.stdin)["match"]=="SIMPLETOKEN yes"' || { echo "FAIL: wait-output did not match"; exit 1; }
 echo "PASS: pane run + wait-output matched 'SIMPLETOKEN yes'"
 
+echo "== test 4: named read sources + pane close =="
+DV="$("$BIN" pane read "$NP" --source detection --lines 5)"
+echo "$DV" | python3 -c 'import sys,json;d=json.load(sys.stdin);assert d["source"]=="detection";assert isinstance(d["text"],str)' || { echo "FAIL: read source"; exit 1; }
+echo "PASS: pane read --source detection"
+"$BIN" pane close "$NP" >/dev/null || { echo "FAIL: pane close"; exit 1; }
+echo "PASS: pane close"
+
 echo ""
 echo "ALL INTEGRATION TESTS PASSED"
 exit 0

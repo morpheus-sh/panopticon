@@ -15,6 +15,7 @@ type noopNotifier struct{}
 
 func (noopNotifier) Blocked(*model.Agent) {}
 func (noopNotifier) Done(*model.Agent)    {}
+func (noopNotifier) Stalled(*model.Agent) {}
 
 // paramReq builds a JSON-RPC request with string-keyed params.
 func paramReq(method string, kv map[string]any) api.Request {

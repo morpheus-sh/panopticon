@@ -41,6 +41,14 @@ type Engine interface {
 	// ReadScrollback returns the terminal text of a pane.
 	ReadScrollback(paneID string, lines int) (string, error)
 
+	// ReadSource returns a named snapshot of a pane:
+	//   - "visible":    the currently rendered viewport
+	//   - "recent":     recent output including soft wraps
+	//   - "detection":  the plain-text bottom-buffer used for agent detection
+	//   - "scrollback": the last `lines` rows of scrollback+screen
+	// Unrecognized sources default to "recent".
+	ReadSource(paneID, source string, lines int) (string, error)
+
 	// ReadVisible returns the currently visible viewport (bottom buffer)
 	// of a pane. This is the snapshot used for agent DETECTION: unlike full
 	// scrollback it excludes echoed shell command lines and stale history,
@@ -260,6 +268,27 @@ func (t *Tmux) ReadVisible(paneID string, rows int) (string, error) {
 		}
 	}
 	return out, nil
+}
+
+// ReadSource returns a named snapshot of a pane, selecting the window region
+// that best matches the requested source. Names mirror the agent-skill
+// contract (visible / recent / detection / scrollback).
+func (t *Tmux) ReadSource(paneID, source string, lines int) (string, error) {
+	switch source {
+	case "visible":
+		return t.ReadVisible(paneID, lines)
+	case "detection":
+		// The plain-text bottom buffer used for agent detection (ANSI-ignored).
+		snap, err := t.ReadVisible(paneID, lines)
+		if err != nil {
+			return "", err
+		}
+		return stripANSI(snap), nil
+	case "scrollback":
+		return t.ReadScrollback(paneID, lines)
+	default: // recent (and anything unknown)
+		return t.ReadScrollback(paneID, lines)
+	}
 }
 
 func (t *Tmux) WorkingDir(paneID string) (string, error) {

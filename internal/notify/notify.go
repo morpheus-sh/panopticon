@@ -22,6 +22,7 @@ import (
 type Notifier interface {
 	Blocked(a *model.Agent)
 	Done(a *model.Agent)
+	Stalled(a *model.Agent)
 }
 
 // StdNotifier emits OS notifications. On macOS it uses osascript (Terminal
@@ -80,6 +81,19 @@ func (n *StdNotifier) Done(a *model.Agent) {
 	switch runtime.GOOS {
 	case "darwin":
 		osascript(fmt.Sprintf("display notification %q with title %q", a.Name+" finished a background turn (done)", "panopticon"))
+	case "linux":
+		bel()
+	}
+}
+
+func (n *StdNotifier) Stalled(a *model.Agent) {
+	if n.debounce("stalled:" + a.Name) {
+		return
+	}
+	// A stuck agent is worth interrupting for: likely a hung LLM/API call.
+	switch runtime.GOOS {
+	case "darwin":
+		osascript(fmt.Sprintf("display notification %q with title %q", a.Name+" appears stalled (no progress)", "panopticon"))
 	case "linux":
 		bel()
 	}
