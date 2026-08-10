@@ -39,9 +39,9 @@ Requires Go ≥ 1.22 and tmux ≥ 3.2.
 ## Checksums (SHA-256)
 
 ```
-91ba7960c6be330cdaf4c2d67bd7b73a14a50656dcd3555f0c0db2a4314893a8  panopticon-darwin-arm64-v0.1.0
-8cebe9a35da95c64a7874bdc77d0d19a294bf720a2179569079eb69033f09ae4  panopticon-darwin-x86_64-v0.1.0
-f3f56314e114b01a3eb91f3b0ca573f6524c437a840d9916bfe49c1f1bd65a48  panopticon-linux-amd64-v0.1.0
+c2262cfaa1101f03f15ad90e5023d7c7af909d03046f0d7c3d9cd7cc4cff0ed7  panopticon-darwin-arm64-v0.1.0
+18edecf6a92f6fe3a567413bed3168516d4469cc82a3b185e5425ce52c7dcb  panopticon-darwin-x86_64-v0.1.0
+e997d4ca67ea700fca02b2aa52f275bb39315a93236f088eac4ba98ffbb50d62  panopticon-linux-amd64-v0.1.0
 ```
 
 ## Usage
