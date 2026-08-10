@@ -150,8 +150,25 @@ make test           # unit tests
 make test-race      # unit tests under the race detector
 make integration    # end-to-end smoke test against a real tmux server
 make vet            # static analysis
+make ci             # everything CI runs, locally
 make install        # install to ~/.local/bin
 ```
+
+## CI
+
+GitHub Actions runs on every push/PR to `main`:
+
+- **unit tests** across Go 1.22 / 1.23 / 1.24 with the race detector,
+  `go vet`, and a `gofmt` check
+- **integration** against a real tmux backend on Ubuntu and macOS (the same
+  `integration.sh` suite)
+- **release artifacts**: build-only Linux binaries for `main` (uploaded as a
+  CI artifact; attach them to a GitHub Release with `gh release create`)
+
+If CI is blocked on an Apple/`osascript` notification path, it is a host
+notification limitation, not a test failure — the integration suite does not
+exercise OS notifications.
+
 
 ## License
 

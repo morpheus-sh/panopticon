@@ -12,11 +12,15 @@ All notable changes to panopticon are documented here. This project follows
 - **Named read sources** for `pane read` / `agent read`:
   `visible`, `recent`, `detection`, `scrollback` (roadmap: richer read sources).
 - **`pane close`** command (CLI + JSON-RPC), releasing any bound agent.
+- **GitHub Actions CI**: unit tests (Go 1.22/1.23/1.24, `-race`, `go vet`,
+  `gofmt`) and end-to-end integration against a real tmux backend on
+  Ubuntu + macOS.
 
 ### Changed
 - Carriage-return line overwrites are modeled in the classifier so spinner
   frames do not accumulate as "new content" (enables accurate stall detection).
 - README rewritten to be engine/user-generic with a full command reference.
+- `go.mod` lowered to `go 1.22` so CI and released toolchains work unchanged.
 
 
 ## [0.1.0] — first release

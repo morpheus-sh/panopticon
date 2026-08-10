@@ -3,7 +3,7 @@
 BIN    := bin/panopticon
 GO     := go
 
-.PHONY: all build test test-race vet integration install clean
+.PHONY: all build test test-race vet integration install clean ci
 
 all: build
 
@@ -26,6 +26,12 @@ integration: build
 # Install to ~/.local/bin (matches the Herdr-installer convention).
 install: build
 	install -m 0755 $(BIN) "$(HOME)/.local/bin/panopticon"
+
+# Everything the CI workflow checks, locally.
+ci: test-race vet
+	gofmt -l cmd internal
+	$(MAKE) build
+	$(MAKE) integration
 
 clean:
 	rm -rf bin
